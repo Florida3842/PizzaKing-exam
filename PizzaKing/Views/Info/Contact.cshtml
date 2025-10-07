@@ -1,0 +1,44 @@
+﻿@{
+    ViewData["Title"] = "Контакты";
+    var ok = (bool)(ViewBag.Submitted ?? false);
+}
+<div class="container ">
+    <div class="row">
+        <div class="col-md-6">
+            <h2>Контакты</h2>
+            <p><i class="fa-solid fa-location-dot"></i> Украина, Днепр, проспект Свободы 23</p>
+            <p><i class="fa fa-phone"></i> +38 (097) 060-14-78</p>
+            <p><i class="fa fa-envelope"></i> <a href="mailto:email@gmail.com">email@gmail.com</a></p>
+
+            <hr />
+            <h4>Написать нам</h4>
+            @if (ok)
+            {
+                <div class="alert alert-success submitted">Спасибо! Сообщение отправлено.</div>
+            }
+            <form method="post" asp-controller="Info" asp-action="Contact">
+                @Html.AntiForgeryToken()
+                <div class="form-group">
+                    <label>Имя</label>
+                    <input name="name" class="form-control" />
+                </div>
+                <div class="form-group">
+                    <label>Email</label>
+                    <input name="email" type="email" class="form-control" />
+                </div>
+                <div class="form-group">
+                    <label>Сообщение</label>
+                    <textarea name="message" rows="4" class="form-control"></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary mt-2">Отправить</button>
+            </form>
+        </div>
+        <div class="col-md-6">
+            <h4>Мы на карте</h4>
+            <div class="embed-responsive embed-responsive-16by9">
+                <iframe class="embed-responsive-item" style="width:100%;height:300px;border:0"
+                        src="https://maps.google.com/maps?q=%D0%94%D0%BD%D0%B5%D0%BF%D1%80%20%D0%BF%D1%80%D0%BE%D1%81%D0%BF.%20%D0%A1%D0%B2%D0%BE%D0%B1%D0%BE%D0%B4%D1%8B%2023&t=&z=14&ie=UTF8&iwloc=&output=embed"></iframe>
+            </div>
+        </div>
+    </div>
+</div>

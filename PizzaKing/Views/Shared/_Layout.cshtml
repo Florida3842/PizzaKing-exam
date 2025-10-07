@@ -1,14 +1,20 @@
-﻿@using PizzaKing.Interfaces;
+﻿@using PizzaKing.Interfaces
 @using PizzaKing.Repositories
-@inject ICategory _categories;
+@inject ICategory _categories
 @{
     var allCategories = await _categories.GetAllCategoriesAsync();
 }
-@inject CartRepository _cart;
+@inject CartRepository _cart
 @{
     var cartProductCount = await _cart.GetShopCartItemsCountAsync();
-}
 
+    // Текущий маршрут для подсветки активного пункта меню
+    var ctrl = (ViewContext.RouteData.Values["controller"] as string) ?? "";
+    var act = (ViewContext.RouteData.Values["action"] as string) ?? "";
+    Func<string, string, bool> IsActive = (c, a) =>
+        ctrl.Equals(c, StringComparison.OrdinalIgnoreCase) &&
+        act.Equals(a, StringComparison.OrdinalIgnoreCase);
+}
 
 <!DOCTYPE html>
 <html lang="ru">
@@ -18,15 +24,11 @@
     <title>@ViewData["Title"] - PizzaStar</title>
     <meta name="description" content="PizzaStar - Вкусная пица!">
 
-    <!-- Стили -->
     @await Html.PartialAsync("_StylesPartial")
-    <!-- / Стили -->
-
 </head>
 <body class="homepage">
     <div class="loader"></div>
 
-    <!-- Header Область Начало -->
     <nav id="top">
         <div class="container">
             <div class="top-left">
@@ -42,7 +44,6 @@
                     <form action="" method="post" enctype="multipart/form-data" id="form-language">
                         <div class="btn-group">
                             <button class="btn btn-link dropdown-toggle" data-toggle="dropdown">
-
                                 <img src="assets/images/en-gb.png" alt="English" title="English" class="language-img">
                                 <span class="drop-text">Языки</span>
                                 <span class="code">Укр-Рус</span>
@@ -70,22 +71,23 @@
             </div>
         </div>
     </nav>
+
     <header class="home">
         <div class="container">
             <div class="header-inner">
                 <div class="header-left">
                     <div id="logo">
-                        <a href="#">
-                            <img src="~/assets/images/logo-white.png" title="Your Store" alt="Your Store" class="img-responsive">
+                        <a asp-controller="Home" asp-action="Index">
+                            <img src="~/assets/images/logo-white.png" title="PizzaStar" alt="PizzaStar" class="img-responsive">
                         </a>
                     </div>
                 </div>
+
                 <div class="header-center">
                     <div class="themability_megamenu-style-dev">
                         <div class="responsive themability_default">
-
                             <nav class="navbar-default">
-                                <div class=" container-themability_megamenu   horizontal ">
+                                <div class="container-themability_megamenu horizontal">
                                     <div class="navbar-header">
                                         <button type="button" id="show-themability_megamenu" data-toggle="collapse" class="navbar-toggle">
                                             <span class="icon-bar"></span>
@@ -95,47 +97,52 @@
                                     </div>
 
                                     <div class="themability_megamenu-wrapper megamenu_typeheader">
-
                                         <span id="remove-themability_megamenu" class="fa fa-times"></span>
 
                                         <div class="themability_megamenu-pattern">
                                             <div class="container">
                                                 <ul class="themability_megamenu" data-megamenuid="55" data-transition="slide" data-animationtime="500">
-                                                    <li class="home @(ViewBag.CategoryId is null ? "current-active active-first" : "")">
+                                                    <!-- Главная активна только когда нет выбранной категории -->
+                                                    <li class="home @((ViewBag.CategoryId == null && IsActive("Home","Index")) ? "current-active active-first" : "")">
                                                         <a asp-controller="Home" asp-action="Index">
                                                             <span><strong> Главная </strong></span>
                                                         </a>
                                                     </li>
+
                                                     @foreach (Category category in allCategories)
                                                     {
                                                         <li class="@(ViewBag.CategoryId == category.Id ? "current-active active-first" : "")">
                                                             <a asp-controller="Home" asp-action="Index" asp-route-categoryId="@category.Id" class="clearfix">
-                                                                <strong> @category.Name </strong>
+                                                                <strong>@category.Name</strong>
                                                             </a>
                                                         </li>
                                                     }
-                                                    <li class="@(ViewBag.CategoryId == -1 ? "current-active active-first" : "")">
-                                                        <p class="close-menu"></p>
-                                                        <a asp-controller="Home" asp-action="Contact">
+
+                                                    <li class="@(IsActive("Info","Delivery") ? "current-active active-first" : "")">
+                                                        <a asp-controller="Info" asp-action="Delivery">
+                                                            <span><strong> Доставка </strong></span>
+                                                        </a>
+                                                    </li>
+
+                                                    <li class="@(IsActive("Info","Contact") ? "current-active active-first" : "")">
+                                                        <a asp-controller="Info" asp-action="Contact">
                                                             <span><strong> Контакты </strong></span>
                                                         </a>
                                                     </li>
                                                 </ul>
-
                                             </div>
                                         </div>
                                     </div>
+
                                 </div>
                             </nav>
                         </div>
                     </div>
-
                 </div>
+
                 <div class="header-right">
                     <div class="search-content">
-                        <div class="search-btn-outer hidden-lg hidden-md">
-                            <i class="fa fa-search"></i>
-                        </div>
+                        <div class="search-btn-outer hidden-lg hidden-md"><i class="fa fa-search"></i></div>
                         <div class="header-search">
                             <form method="get" asp-controller="Home" asp-action="Index">
                                 <div id="themabilitySearch" class="input-group themability-search">
@@ -147,15 +154,14 @@
                                 </div>
                             </form>
                         </div>
-
                     </div>
+
                     <div class="cart-content">
                         <div class="btn-group btn-block">
                             <a asp-controller="ShopCart" asp-action="Index" class="btn btn-inverse btn-block btn-lg">
                                 <i class="fa fa-shopping-cart"></i> <span id="cartProductNumber">@(cartProductCount > 0 ? cartProductCount : 0)</span>
                             </a>
                         </div>
-
                     </div>
 
                     <div id="header_ac" class="dropdown">
@@ -169,13 +175,9 @@
 
                                 @if (User.IsInRole("Admin") || User.IsInRole("Editor"))
                                 {
-                                    <li>
-                                        <a asp-controller="Panel" asp-action="Index">Панель управления</a>
-                                    </li>
+                                    <li><a asp-controller="Panel" asp-action="Index">Панель управления</a></li>
                                 }
-                                <li>
-                                    <a asp-controller="Order" asp-action="MyOrders">Мои заказы</a>
-                                </li>
+                                <li><a asp-controller="Order" asp-action="MyOrders">Мои заказы</a></li>
                                 <li class="text-sm-center">
                                     <form method="post" asp-controller="Account" asp-action="Logout">
                                         <input class="btn btn-dark" type="submit" value="Выход" />
@@ -186,36 +188,27 @@
                         else
                         {
                             <ul class="dropdown-menu dropdown-menu-right account-link-toggle">
-                                <li>
-                                    <a asp-controller="Account" asp-action="Register">Регистрация</a>
-                                </li>
-                                <li>
-                                    <a asp-controller="Account" asp-action="Login">Авторизация</a>
-                                </li>
+                                <li><a asp-controller="Account" asp-action="Register">Регистрация</a></li>
+                                <li><a asp-controller="Account" asp-action="Login">Авторизация</a></li>
                             </ul>
                         }
                     </div>
                 </div>
             </div>
         </div>
-
     </header>
-    <!-- Header Область Конец -->
 
     <div class="container-full ">
         @RenderBody()
     </div>
 
-    <!-- Footer Область Начало -->
     <footer>
         <div class="container">
             <div class="footer-top">
                 <div class="row">
                     <div class="col-md-3">
                         <div class="position-footer-left">
-                            <h5 class="toggled title">
-                                Контакты
-                            </h5>
+                            <h5 class="toggled title">Контакты</h5>
                             <ul class="list-unstyled">
                                 <li>
                                     <div class="site">
@@ -229,62 +222,53 @@
                                         <div class="contact_site">+38 (097) 060-14-78</div>
                                     </div>
                                 </li>
-
                                 <li>
                                     <div class="email">
                                         <div class="contact_title"><i class="fa fa-envelope"></i></div>
                                         <div class="contact_site">
-                                            <a href="mailto:email@gmail.com" class="contact_site">
-                                                <span class="__cf_email__">
-                                                    email@gmail.com
-                                                </span>
-                                            </a>
+                                            <a href="mailto:email@gmail.com" class="contact_site"><span class="__cf_email__">email@gmail.com</span></a>
                                         </div>
                                     </div>
                                 </li>
                             </ul>
                         </div>
                     </div>
+
                     <div class="col-md-3">
                         <h5 class="toggled">Меню</h5>
                         <ul class="list-unstyled">
-                            <li>
-                                <a asp-controller="Home" asp-action="Index">Главная</a>
-                            </li>
+                            <li><a asp-controller="Home" asp-action="Index">Главная</a></li>
                             @foreach (Category category in allCategories)
                             {
                                 <li>
-                                    <a asp-controller="Home" asp-action="Index" asp-route-categoryId="@category.Id">
-                                        @category.Name
-                                    </a>
+                                    <a asp-controller="Home" asp-action="Index" asp-route-categoryId="@category.Id">@category.Name</a>
                                 </li>
                             }
-                            <li>
-                                <a asp-controller="Home" asp-action="Contact">Контакты</a>
-                            </li>
+                            <li><a asp-controller="Info" asp-action="Delivery" class="contact_site">Доставка</a></li>
+                            <li><a asp-controller="Info" asp-action="Contact" class="contact_site">Контакты</a></li>
                         </ul>
-
-
                     </div>
+
                     <div class="col-md-3">
                         <h5 class="toggled">Дополнительно</h5>
                         <ul class="list-unstyled">
-                            <li><a href="#" class="contact_site">Доставка</a></li>
-                            <li><a href="#" class="contact_site">Контакты</a></li>
+                            <li><a asp-controller="Info" asp-action="Delivery" class="contact_site">Доставка</a></li>
+                            <li><a asp-controller="Info" asp-action="Contact" class="contact_site">Контакты</a></li>
                             <li><a href="#">Карта сайта</a></li>
-                            <li><a href="#">Мой Аккаунт</a></li>
+                            <li><a asp-controller="Account" asp-action="Login">Мой Аккаунт</a></li>
                         </ul>
                     </div>
+
                     <div class="col-md-3">
                         <div class="position-footer-right">
                             <div class="follow-link">
                                 <h4>Социальные сети</h4>
                                 <div class="social-media">
-                                    <a href="index.html#" title="facebook"><i class="fa-brands fa-facebook-f"></i></a>
-                                    <a href="index.html#" title="facebook"><i class="fa-brands fa-twitter"></i></a>
-                                    <a href="index.html#" title="facebook"><i class="fa-brands fa-instagram"></i></a>
-                                    <a href="index.html#" title="facebook"><i class="fa-brands fa-pinterest-p"></i></a>
-                                    <a href="index.html#" title="facebook"><i class="fa-brands fa-youtube"></i></a>
+                                    <a href="#"><i class="fa-brands fa-facebook-f"></i></a>
+                                    <a href="#"><i class="fa-brands fa-twitter"></i></a>
+                                    <a href="#"><i class="fa-brands fa-instagram"></i></a>
+                                    <a href="#"><i class="fa-brands fa-pinterest-p"></i></a>
+                                    <a href="#"><i class="fa-brands fa-youtube"></i></a>
                                 </div>
                             </div>
                             <div class="payment-link">
@@ -299,18 +283,14 @@
                             </div>
                         </div>
                     </div>
+
                 </div>
             </div>
-            <p class="copyright"><a href="index.html#"></a>© 2023 PizzaStar - Все права защищены.</p>
+            <p class="copyright">© 2023 PizzaStar - Все права защищены.</p>
         </div>
     </footer>
-    <!-- Footer Область Конец -->
-    <!-- Скрипты -->
-    <!-- Секция для подгрузки скриптов из других представлений -->
-    @await RenderSectionAsync("Scripts", required: false)
-    <!-- Секция для подгрузки основных скриптов из частичного представления -->
-    @await Html.PartialAsync("_ScriptsPartial")
-    <!-- / Скрипты -->
 
+    @await RenderSectionAsync("Scripts", required: false)
+    @await Html.PartialAsync("_ScriptsPartial")
 </body>
 </html>
