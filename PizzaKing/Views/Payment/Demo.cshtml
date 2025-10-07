@@ -1,0 +1,16 @@
+﻿@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+<div class="row justify-content-center">
+    <div class="col-sm-6">
+        <div class="well mt-5 text-center">
+            <h3>Оплата заказа</h3>
+            <p>Сумма: <b>@ViewBag.Amount @ViewBag.Currency</b></p>
+            <p class="text-muted">Демо-режим (без реального списания средств)</p>
+            <div class="mt-3">
+                <a class="btn btn-primary" href="/payment/demo/success?orderId=@ViewBag.OrderId">Оплатить</a>
+                <a class="btn btn-outline-secondary ms-2" href="/payment/demo/fail?orderId=@ViewBag.OrderId">Оплата не прошла</a>
+            </div>
+        </div>
+    </div>
+</div>

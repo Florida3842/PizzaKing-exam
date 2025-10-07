@@ -104,13 +104,40 @@ namespace PizzaKing.Controllers
             catch (FormatException)
             {
                 ViewBag.Succeeded = false;
+                ViewBag.Error = "Некорректная или повреждённая ссылка.";
                 return View();
             }
 
             var result = await _userManager.ConfirmEmailAsync(user, decoded);
             ViewBag.Succeeded = result.Succeeded;
+            ViewBag.Error = string.Join("; ", result.Errors.Select(e => e.Description));
             return View();
         }
+        //Отправить снова
+        [AllowAnonymous]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ResendConfirmation(string email)
+        {
+            if (string.IsNullOrWhiteSpace(email))
+                return RedirectToAction("Login");
+
+            var user = await _userManager.FindByEmailAsync(email);
+            if (user == null || user.EmailConfirmed)
+                return View("ResendConfirmationDone");
+
+            var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+            var tokenEnc = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(token));
+
+            var link = Url.Action("ConfirmEmail", "Account",
+                new { userId = user.Id, token = tokenEnc }, protocol: Request.Scheme)!;
+
+            await _emailSender.SendAsync(email, "Подтверждение email",
+                $"<p>Ссылка для подтверждения: <a href=\"{link}\">{link}</a></p>");
+
+            return View("ResendConfirmationDone");
+        }
+
 
         // ===== «Забыли пароль?» =====
         [AllowAnonymous]

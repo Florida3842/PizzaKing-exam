@@ -19,6 +19,8 @@ IConfigurationRoot _confString = new ConfigurationBuilder()
 
 builder.Services.AddDbContext<ApplicationContext>(options =>
     options.UseSqlServer(_confString.GetConnectionString("DefaultConnection")));
+builder.Services.AddSignalR();
+
 
 builder.Services.AddIdentity<User, IdentityRole>(opts =>
 {
@@ -81,7 +83,7 @@ app.UseRouting();
 
 app.UseAuthentication();
 app.UseAuthorization();
-
+app.MapHub<OrderHub>("/hubs/orders");
 app.MapStaticAssets();
 
 app.MapControllerRoute(

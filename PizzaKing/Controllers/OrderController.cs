@@ -8,9 +8,11 @@ using PizzaKing.Models.Pages;
 using PizzaKing.Repositories;
 using PizzaKing.ViewModels;
 using System.Security.Claims;
+using Microsoft.AspNetCore.SignalR;
 
 namespace PizzaKing.Controllers
 {
+
     public class OrderController : Controller
     {
         private readonly CartRepository _cartRepository;
@@ -28,13 +30,11 @@ namespace PizzaKing.Controllers
         [HttpPost]
         public async Task<IActionResult> Index()
         {
-            if (User.Identity.IsAuthenticated)
+            if (User.Identity?.IsAuthenticated == true)
             {
                 var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-                if (userId == null)
-                {
-                    return NotFound();
-                }
+                if (string.IsNullOrEmpty(userId)) return NotFound();
+
                 var currentUser = await _userManager.FindByIdAsync(userId);
                 return View("Authenticated", new OrderViewModelAuthenticated
                 {
@@ -42,95 +42,102 @@ namespace PizzaKing.Controllers
                     Address = currentUser.Address
                 });
             }
-            else
-            {
-                return View("NonAuthenticated");
-            }
+            return View("NonAuthenticated");
         }
+
         [Route("order-finish-result")]
         [HttpPost]
         [AutoValidateAntiforgeryToken]
         public async Task<IActionResult> FinishOrderNonAuthenticated(OrderViewModel orderViewModel)
         {
-            if (ModelState.IsValid)
+            if (!ModelState.IsValid) return View("NonAuthenticated", orderViewModel);
+
+            var items = await _cartRepository.GetShopCartItemsAsync();
+            if (!items.Any()) return RedirectToAction("Index", "ShopCart");
+
+            var order = new Order
             {
-                Order order = new Order()
-                {
-                    Fio = orderViewModel.Fio,
-                    Email = orderViewModel.Email,
-                    Phone = orderViewModel.Phone,
-                    City = orderViewModel.City,
-                    Address = orderViewModel.Address,
-                };
-                var products = await _cartRepository.GetShopCartItemsAsync();
-                var orderDetails = products.Select(e => new OrderDetails
-                {
-                    Order = order,
-                    ProductId = e.ProductId,
-                    Quantity = e.Count
-                }).ToList();
-                order.OrderDetails = orderDetails;
-                await _orders.AddOrderAsync(order);
-                await _cartRepository.ClearCartAsync();
-                return View("ThankYou");
-            }
-            return View("NonAuthenticated", orderViewModel);
+                Fio = orderViewModel.Fio,
+                Email = orderViewModel.Email,
+                Phone = orderViewModel.Phone,
+                City = orderViewModel.City,
+                Address = orderViewModel.Address,
+                CreatedAt = DateTime.Now
+            };
+
+            order.OrderDetails = items.Select(e => new OrderDetails
+            {
+                Order = order,
+                ProductId = e.ProductId,
+                Quantity = e.Count
+            }).ToList();
+
+            await _orders.AddOrderAsync(order);
+
+            var amount = items.Sum(i => i.Price * i.Count);
+            await _cartRepository.ClearCartAsync();
+
+            return RedirectToAction("Start", "Payment", new { orderId = order.Id, amount });
         }
+
         [Route("order-finish")]
         [HttpPost]
         [AutoValidateAntiforgeryToken]
         public async Task<IActionResult> FinishOrder(OrderViewModelAuthenticated orderViewModel)
         {
-            if (ModelState.IsValid)
-            {
-                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-                if (userId == null)
-                {
-                    return NotFound();
-                }
-                var currentUser = await _userManager.FindByIdAsync(userId);
-                Order order = new Order()
-                {
-                    UserId = userId,
-                    City = orderViewModel.City,
-                    Address = orderViewModel.Address,
-                };
-                if (!currentUser.City.Equals(orderViewModel.City, StringComparison.OrdinalIgnoreCase))
-                {
-                    currentUser.City = orderViewModel.City;
-                    var result = await _userManager.UpdateAsync(currentUser);
-                }
-                if (!currentUser.Address.Equals(orderViewModel.Address, StringComparison.OrdinalIgnoreCase))
-                {
-                    currentUser.Address = orderViewModel.Address;
-                    var result = await _userManager.UpdateAsync(currentUser);
-                }
-                var products = await _cartRepository.GetShopCartItemsAsync();
-                var orderDetails = products.Select(e => new OrderDetails
-                {
-                    Order = order,
-                    ProductId = e.ProductId,
-                    Quantity = e.Count
-                }).ToList();
-                order.OrderDetails = orderDetails;
-                await _orders.AddOrderAsync(order);
-                await _cartRepository.ClearCartAsync();
-                return View("ThankYou");
-            }
-            return View("Authenticated", orderViewModel);
+            if (!ModelState.IsValid) return View("Authenticated", orderViewModel);
 
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId)) return NotFound();
+
+            var currentUser = await _userManager.FindByIdAsync(userId);
+
+            var order = new Order
+            {
+                UserId = userId,
+                City = orderViewModel.City,
+                Address = orderViewModel.Address,
+                CreatedAt = DateTime.Now
+            };
+
+            if (!string.Equals(currentUser.City, orderViewModel.City, StringComparison.OrdinalIgnoreCase))
+            {
+                currentUser.City = orderViewModel.City;
+                await _userManager.UpdateAsync(currentUser);
+            }
+            if (!string.Equals(currentUser.Address, orderViewModel.Address, StringComparison.OrdinalIgnoreCase))
+            {
+                currentUser.Address = orderViewModel.Address;
+                await _userManager.UpdateAsync(currentUser);
+            }
+
+            var items = await _cartRepository.GetShopCartItemsAsync();
+            if (!items.Any()) return RedirectToAction("Index", "ShopCart");
+
+            order.OrderDetails = items.Select(e => new OrderDetails
+            {
+                Order = order,
+                ProductId = e.ProductId,
+                Quantity = e.Count
+            }).ToList();
+
+            await _orders.AddOrderAsync(order);
+
+            var amount = items.Sum(i => i.Price * i.Count);
+            await _cartRepository.ClearCartAsync();
+
+            return RedirectToAction("Start", "Payment", new { orderId = order.Id, amount });
         }
+
         [Route("orders")]
         [HttpGet]
         public IActionResult MyOrders(QueryOptions options)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (userId == null)
-            {
-                return NotFound();
-            }
+            if (userId == null) return NotFound();
             return View(_orders.GetAllOrdersByUserWithDetails(options, userId));
         }
+
         [Authorize(Roles = "Admin")]
         [Route("/panel-orders")]
         [HttpGet]
@@ -151,8 +158,30 @@ namespace PizzaKing.Controllers
             }
             return Ok();
         }
+        [Authorize(Roles = "Admin")]
+        [HttpPost("/panel/update-order-status")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> UpdateOrderStatus(
+        int orderId,
+        OrderStatus status,
+        [FromServices] IOrder orders,
+        [FromServices] IHubContext<OrderHub> hub) 
+            {
+            var order = await orders.GetOrderAsync(orderId);
+            if (order is null) return NotFound();
 
+            order.Status = status;
+            await orders.EditOrderAsync(order);
+
+
+            if (!string.IsNullOrEmpty(order.UserId))
+            {
+                await hub.Clients.Group($"user:{order.UserId}")
+                    .SendAsync("orderStatusChanged", new { orderId = order.Id, status = order.Status.ToString() });
+            }
+
+            return Ok();
+        }
 
     }
-
 }
