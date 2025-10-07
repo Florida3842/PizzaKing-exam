@@ -1,0 +1,12 @@
+﻿@{
+    ViewData["Title"] = "Подтверждение e-mail";
+    var ok = (bool)(ViewBag.Succeeded ?? false);
+}
+<div class="row justify-content-center">
+    <div class="col-sm-6">
+        <div class="well mt-5 text-center">
+            <h3>@(ok ? "E-mail подтверждён 🎉" : "Не удалось подтвердить e-mail")</h3>
+            <a class="btn btn-primary mt-3" asp-controller="Account" asp-action="Login">Войти</a>
+        </div>
+    </div>
+</div>

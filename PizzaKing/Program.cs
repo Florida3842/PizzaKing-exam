@@ -1,29 +1,43 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.DataProtection;
 using PizzaKing.Data;
 using PizzaKing.Interfaces;
 using PizzaKing.Models;
 using PizzaKing.Repositories;
+using System;
+using System.IO;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllersWithViews();
 
-IConfigurationRoot _confString = new ConfigurationBuilder().
-    SetBasePath(AppDomain.CurrentDomain.BaseDirectory).AddJsonFile("appsettings.json").Build();
+IConfigurationRoot _confString = new ConfigurationBuilder()
+    .SetBasePath(AppDomain.CurrentDomain.BaseDirectory)
+    .AddJsonFile("appsettings.json")
+    .Build();
 
 builder.Services.AddDbContext<ApplicationContext>(options =>
-               options.UseSqlServer(_confString.GetConnectionString("DefaultConnection")));
+    options.UseSqlServer(_confString.GetConnectionString("DefaultConnection")));
 
 builder.Services.AddIdentity<User, IdentityRole>(opts =>
 {
-    opts.Password.RequiredLength = 5;   
-    opts.Password.RequireNonAlphanumeric = false;   
-    opts.Password.RequireLowercase = false; 
-    opts.Password.RequireUppercase = false; 
-    opts.Password.RequireDigit = false; 
+    opts.Password.RequiredLength = 5;
+    opts.Password.RequireNonAlphanumeric = false;
+    opts.Password.RequireLowercase = false;
+    opts.Password.RequireUppercase = false;
+    opts.Password.RequireDigit = false;
 })
-    .AddEntityFrameworkStores<ApplicationContext>();
+    .AddEntityFrameworkStores<ApplicationContext>()
+    .AddDefaultTokenProviders();
+
+builder.Services.Configure<DataProtectionTokenProviderOptions>(o =>
+    o.TokenLifespan = TimeSpan.FromHours(24));
+
+builder.Services.AddDataProtection()
+    .PersistKeysToFileSystem(new DirectoryInfo(
+        Path.Combine(builder.Environment.ContentRootPath, "keys")))
+    .SetApplicationName("PizzaKing");
 
 builder.Services.AddScoped<ICategory, CategoryRepository>();
 builder.Services.AddTransient<IProduct, ProductRepository>();
@@ -31,11 +45,12 @@ builder.Services.AddScoped(e => CartRepository.GetCart(e));
 builder.Services.AddMemoryCache();
 builder.Services.AddSession();
 builder.Services.AddTransient<IOrder, OrderRepository>();
-
+builder.Services.AddTransient<PizzaKing.Services.IEmailSender, PizzaKing.Services.DevEmailSender>();
 
 var app = builder.Build();
 
 app.UseSession();
+
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
@@ -46,8 +61,7 @@ using (var scope = app.Services.CreateScope())
         await DbInit.InitializeAsync(userManager, rolesManager);
         var applicationContext = services.GetRequiredService<ApplicationContext>();
         await DbInit.InitializeContentAsync(applicationContext);
-        //Новый код
-        await DbInit.CreateSeedDataAsync(applicationContext, categories: new int[] { 1, 2, 3 });
+        await DbInit.CreateSeedDataAsync(applicationContext, categories: new int[] { 1, 2, 3 });
     }
     catch (Exception ex)
     {
@@ -56,12 +70,9 @@ using (var scope = app.Services.CreateScope())
     }
 }
 
-
-// Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
-    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
 
@@ -77,6 +88,5 @@ app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}")
     .WithStaticAssets();
-
 
 app.Run();

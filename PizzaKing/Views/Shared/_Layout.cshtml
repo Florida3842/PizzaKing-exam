@@ -165,9 +165,8 @@
                         @if (User.Identity.IsAuthenticated)
                         {
                             <ul class="dropdown-menu dropdown-menu-right account-link-toggle">
-                                <li>
-                                    <a asp-controller="Account" asp-action="">@User.Identity.Name</a>
-                                </li>
+                                <li><span class="dropdown-item-text">@User.Identity.Name</span></li>
+
                                 @if (User.IsInRole("Admin") || User.IsInRole("Editor"))
                                 {
                                     <li>
