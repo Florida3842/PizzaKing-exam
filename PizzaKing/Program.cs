@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Identity;
+п»їusing Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using PizzaKing.Data;
 using PizzaKing.Interfaces;
@@ -17,11 +17,11 @@ builder.Services.AddDbContext<ApplicationContext>(options =>
 
 builder.Services.AddIdentity<User, IdentityRole>(opts =>
 {
-    opts.Password.RequiredLength = 5;   // минимальная длина
-    opts.Password.RequireNonAlphanumeric = false;   // требуются ли не алфавитно-цифровые символы
-    opts.Password.RequireLowercase = false; // требуются ли символы в нижнем регистре
-    opts.Password.RequireUppercase = false; // требуются ли символы в верхнем регистре
-    opts.Password.RequireDigit = false; // требуются ли цифры
+    opts.Password.RequiredLength = 5;   
+    opts.Password.RequireNonAlphanumeric = false;   
+    opts.Password.RequireLowercase = false; 
+    opts.Password.RequireUppercase = false; 
+    opts.Password.RequireDigit = false; 
 })
     .AddEntityFrameworkStores<ApplicationContext>();
 
@@ -46,8 +46,8 @@ using (var scope = app.Services.CreateScope())
         await DbInit.InitializeAsync(userManager, rolesManager);
         var applicationContext = services.GetRequiredService<ApplicationContext>();
         await DbInit.InitializeContentAsync(applicationContext);
-        //Новый код
-        await DbInit.CreateSeedDataAsync(applicationContext, categories: new int[] { 1, 2, 3 });
+В  В  В  В  //РќРѕРІС‹Р№ РєРѕРґ
+В  В  В  В  await DbInit.CreateSeedDataAsync(applicationContext, categories: new int[] { 1, 2, 3 });
     }
     catch (Exception ex)
     {
