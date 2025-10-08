@@ -16,6 +16,50 @@
         act.Equals(a, StringComparison.OrdinalIgnoreCase);
 }
 
+<style>
+    .themability_megamenu .dropdown:hover > .dropdown-menu {
+        display: block;
+        opacity: 1;
+        visibility: visible;
+    }
+
+    /* Подменю внутри dropdown */
+    .dropdown-submenu {
+        position: relative;
+    }
+
+        .dropdown-submenu > .dropdown-menu {
+            top: 0;
+            left: 100%;
+            margin-top: -1px;
+            display: none;
+        }
+
+        .dropdown-submenu:hover > .dropdown-menu {
+            display: block;
+        }
+
+    .dropdown-menu {
+        background-color: #fff;
+        border-radius: 8px;
+        padding: 8px;
+        min-width: 180px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    }
+
+        .dropdown-menu li a {
+            display: block;
+            padding: 8px 14px;
+            color: #333;
+            font-size: 16px;
+            text-decoration: none;
+        }
+
+            .dropdown-menu li a:hover {
+                background-color: #f4f4f4;
+            }
+</style>
+
 <!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -109,14 +153,34 @@
                                                         </a>
                                                     </li>
 
-                                                    @foreach (Category category in allCategories)
-                                                    {
-                                                        <li class="@(ViewBag.CategoryId == category.Id ? "current-active active-first" : "")">
-                                                            <a asp-controller="Home" asp-action="Index" asp-route-categoryId="@category.Id" class="clearfix">
-                                                                <strong>@category.Name</strong>
-                                                            </a>
-                                                        </li>
-                                                    }
+                                                    <li class="dropdown">
+                                                        <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+                                                            <span><strong>Меню</strong> <i class="fa fa-angle-down"></i></span>
+                                                        </a>
+
+                                                        <ul class="dropdown-menu">
+                                                            @{
+                                                                var pizzas = allCategories.FirstOrDefault(c => c.Name.Contains("пиц", StringComparison.OrdinalIgnoreCase));
+                                                                var salads = allCategories.FirstOrDefault(c => c.Name.Contains("салат", StringComparison.OrdinalIgnoreCase));
+                                                                var drinks = allCategories.FirstOrDefault(c => c.Name.Contains("напит", StringComparison.OrdinalIgnoreCase) || c.Name.Contains("drink", StringComparison.OrdinalIgnoreCase));
+                                                            }
+
+                                                            @if (pizzas != null)
+                                                            {
+                                                                <li><a asp-controller="Home" asp-action="Index" asp-route-categoryId="@pizzas.Id">Пиццы</a></li>
+                                                            }
+
+                                                            @if (salads != null)
+                                                            {
+                                                                <li><a asp-controller="Home" asp-action="Index" asp-route-categoryId="@salads.Id">Салаты</a></li>
+                                                            }
+
+                                                            @if (drinks != null)
+                                                            {
+                                                                <li><a asp-controller="Home" asp-action="Index" asp-route-categoryId="@drinks.Id">Напитки</a></li>
+                                                            }
+                                                        </ul>
+                                                    </li>
 
                                                     <li class="@(IsActive("Info","Delivery") ? "current-active active-first" : "")">
                                                         <a asp-controller="Info" asp-action="Delivery">

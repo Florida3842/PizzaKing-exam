@@ -12,6 +12,9 @@ namespace PizzaKing.Interfaces
         Task RemoveFromCartAsync(ShopCartItem shopCartItem);
         Task UpdateFromCartAsync(ShopCartItem shopCartItem);
         Task ClearCartAsync();
+
+        Task UpdateCartItemIngredientsAsync(int shopCartItemId, CustomCartSelection selection);
+        Task<CustomCartSelection> GetCartItemSelectionAsync(int shopCartItemId);
     }
 
 }

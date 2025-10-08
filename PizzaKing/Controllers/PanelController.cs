@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using PizzaKing.Models;
 using PizzaKing.Models.Pages;
 using PizzaKing.ViewModels;
@@ -11,9 +12,11 @@ namespace PizzaKing.Controllers
     public class PanelController : Controller
     {
         private readonly UserManager<User> _userManager;
-        public PanelController(UserManager<User> userManager)
+        private readonly ApplicationContext _context;
+        public PanelController(UserManager<User> userManager, ApplicationContext context)
         {
             _userManager = userManager;
+            _context = context;
         }
 
 
@@ -139,6 +142,26 @@ namespace PizzaKing.Controllers
             return Ok();
         }
 
-        
+        [HttpGet]
+        [Route("/panel/review")]
+        public async Task<IActionResult> Review(int id)
+        {
+            var review = await _context.Reviews.FindAsync(id);
+            if (review == null) return NotFound();
+            return View(review);
+        }
+
+        [HttpDelete]
+        [Route("/panel/delete-review")]
+        public async Task<IActionResult> DeleteReview(int reviewId)
+        {
+            var review = await _context.Reviews.FindAsync(reviewId);
+            if (review == null) return NotFound();
+            _context.Reviews.Remove(review);
+            await _context.SaveChangesAsync();
+
+            return Ok();
+        }
+
     }
 }

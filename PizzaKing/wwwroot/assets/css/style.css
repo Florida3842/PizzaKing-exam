@@ -6147,3 +6147,28 @@ header {
     border-radius: 0.25rem;
     transition: border-color .15s ease-in-out,box-shadow .15s ease-in-out;
 }
+
+.topping-card {
+    background: linear-gradient(145deg, #ffefd5, #ffe4e1);
+    border-radius: 12px;
+    transition: transform 0.2s, box-shadow 0.2s;
+    cursor: pointer;
+}
+
+.topping-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+}
+
+.topping-card .form-check-input {
+    width: 24px;
+    height: 24px;
+}
+
+.topping-card label {
+    cursor: pointer;
+}
+
+select.form-select {
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}

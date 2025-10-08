@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using PizzaKing.Models;
+using PizzaKing.Models.Custom;
 
 namespace PizzaKing.Data
 {
@@ -112,7 +113,6 @@ namespace PizzaKing.Data
                         Description = "Пепперони, сыр Моцарелла, соус фирменный томатный, специи.",
                         Weight = 460,
                         Calories = 1160,
-                        Brand = "PizzaDay",
                         Price = 140,
                         Category = pizzaCategory,
                         Type = ProductType.Dish,
@@ -124,7 +124,6 @@ namespace PizzaKing.Data
                         Description = "Kurka, sire mozzarella, sire cheddar, cucurudza, verticillium sauce.",
                         Weight = 520,
                         Calories = 1220,
-                        Brand = "PizzaDay",
                         Price = 155,
                         Category = pizzaCategory,
                         Type = ProductType.Dish,
@@ -136,7 +135,6 @@ namespace PizzaKing.Data
                         Description = "Всегда освежает и бодрит!",
                         Weight = 500,
                         Calories = 225,
-                        Brand = "PizzaDay",
                         Price = 24,
                         Category = drinksCategory,
                         Type = ProductType.Drink,
@@ -148,7 +146,6 @@ namespace PizzaKing.Data
                         Description = "Ветчина, салями, бекон, сыр Моцарелла, помидор, маринованный лук, соус фирменный томатный.",
                         Weight = 570,
                         Calories = 1420,
-                        Brand = "Silpo",
                         Price = 179,
                         Category = pizzaCategory,
                         Type = ProductType.Dish,
@@ -160,11 +157,72 @@ namespace PizzaKing.Data
                         Description = "Курица, бекон, сыр Моцарелла, помидор, листья салата, яйца, соус фирменный.",
                         Weight = 300,
                         Calories = 680,
-                        Brand = "PizzaDay",
                         Price = 95,
                         Category = saladCategory,
                         Type = ProductType.Dish,
                         DateOfPublication = DateTime.Now
+                    }
+                );
+                await context.SaveChangesAsync();
+            }
+
+            if (!await context.Ingredients.AnyAsync())
+            {
+                await context.Ingredients.AddRangeAsync(
+                    // Crusts
+                    new Ingredient { Name = "Тонкая основа", Type = IngredientType.Crust, Price = 0m },
+                    new Ingredient { Name = "Традиционная основа", Type = IngredientType.Crust, Price = 20m },
+                    new Ingredient { Name = "Цельнозерновая основа", Type = IngredientType.Crust, Price = 25m },
+                    new Ingredient { Name = "Толстая основа (пан)", Type = IngredientType.Crust, Price = 30m },
+
+                    // Sauces
+                    new Ingredient { Name = "Томатный соус", Type = IngredientType.Sauce, Price = 0m },
+                    new Ingredient { Name = "Чесночный соус", Type = IngredientType.Sauce, Price = 15m },
+                    new Ingredient { Name = "Барбекю соус", Type = IngredientType.Sauce, Price = 20m },
+                    new Ingredient { Name = "Белый сливочный соус", Type = IngredientType.Sauce, Price = 18m },
+
+                    // Toppings
+                    new Ingredient { Name = "Пепперони", Type = IngredientType.Topping, Price = 30m },
+                    new Ingredient { Name = "Ветчина", Type = IngredientType.Topping, Price = 28m },
+                    new Ingredient { Name = "Бекон", Type = IngredientType.Topping, Price = 32m },
+                    new Ingredient { Name = "Курица", Type = IngredientType.Topping, Price = 30m },
+                    new Ingredient { Name = "Грибы", Type = IngredientType.Topping, Price = 18m },
+                    new Ingredient { Name = "Оливки", Type = IngredientType.Topping, Price = 15m },
+                    new Ingredient { Name = "Помидоры", Type = IngredientType.Topping, Price = 12m },
+                    new Ingredient { Name = "Ананас", Type = IngredientType.Topping, Price = 20m },
+                    new Ingredient { Name = "Моцарелла", Type = IngredientType.Topping, Price = 35m },
+                    new Ingredient { Name = "Чеддер", Type = IngredientType.Topping, Price = 35m },
+                    new Ingredient { Name = "Перец халапеньо", Type = IngredientType.Topping, Price = 12m },
+                    new Ingredient { Name = "Лук маринованный", Type = IngredientType.Topping, Price = 10m },
+                    new Ingredient { Name = "Руккола (после выпечки)", Type = IngredientType.Topping, Price = 22m }
+                );
+
+                await context.SaveChangesAsync();
+            }
+
+            if (!await context.Reviews.AnyAsync())
+            {
+                await context.Reviews.AddRangeAsync(
+                    new Review
+                    {
+                        Author = "Алексей",
+                        Text = "Отличная пицца — корочка хрустящая, начинка свежая. Быстрая доставка, рекомендую!",
+                        Rating = 5,
+                        CreatedAt = DateTime.Now.AddDays(-10),
+                    },
+                    new Review
+                    {
+                        Author = "Ирина",
+                        Text = "Вкусно, но немного не хватало соли в соусе. В целом — хорошее соотношение цены и качества.",
+                        Rating = 4,
+                        CreatedAt = DateTime.Now.AddDays(-7),
+                    },
+                    new Review
+                    {
+                        Author = "Михаил",
+                        Text = "Очень понравился сервис — менеджер уточнил все детали заказа. Пицца горячая и ароматная.",
+                        Rating = 5,
+                        CreatedAt = DateTime.Now.AddDays(-3),
                     }
                 );
 

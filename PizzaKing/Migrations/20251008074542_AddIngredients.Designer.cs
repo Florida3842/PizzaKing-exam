@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace PizzaKing.Migrations
 {
     [DbContext(typeof(ApplicationContext))]
-    partial class ApplicationContextModelSnapshot : ModelSnapshot
+    [Migration("20251008074542_AddIngredients")]
+    partial class AddIngredients
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -295,6 +298,9 @@ namespace PizzaKing.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<string>("Brand")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<float>("Calories")
                         .HasColumnType("real");
 
@@ -331,38 +337,6 @@ namespace PizzaKing.Migrations
                     b.ToTable("Products");
                 });
 
-            modelBuilder.Entity("PizzaKing.Models.Review", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Author")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("PhotoPath")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("Rating")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Text")
-                        .IsRequired()
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Reviews");
-                });
-
             modelBuilder.Entity("PizzaKing.Models.ShopCartItem", b =>
                 {
                     b.Property<int>("Id")
@@ -394,32 +368,6 @@ namespace PizzaKing.Migrations
                     b.HasIndex("ProductId");
 
                     b.ToTable("ShopCartItems");
-                });
-
-            modelBuilder.Entity("PizzaKing.Models.ShopCartItemIngredient", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("IngredientId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("ShopCartItemId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("Type")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("IngredientId");
-
-                    b.HasIndex("ShopCartItemId");
-
-                    b.ToTable("ShopCartItemIngredients");
                 });
 
             modelBuilder.Entity("PizzaKing.Models.User", b =>
@@ -597,33 +545,9 @@ namespace PizzaKing.Migrations
                     b.Navigation("Product");
                 });
 
-            modelBuilder.Entity("PizzaKing.Models.ShopCartItemIngredient", b =>
-                {
-                    b.HasOne("PizzaKing.Models.Custom.Ingredient", "Ingredient")
-                        .WithMany()
-                        .HasForeignKey("IngredientId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("PizzaKing.Models.ShopCartItem", "ShopCartItem")
-                        .WithMany("Ingredients")
-                        .HasForeignKey("ShopCartItemId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Ingredient");
-
-                    b.Navigation("ShopCartItem");
-                });
-
             modelBuilder.Entity("PizzaKing.Models.Checkout.Order", b =>
                 {
                     b.Navigation("OrderDetails");
-                });
-
-            modelBuilder.Entity("PizzaKing.Models.ShopCartItem", b =>
-                {
-                    b.Navigation("Ingredients");
                 });
 #pragma warning restore 612, 618
         }

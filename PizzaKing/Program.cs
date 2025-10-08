@@ -48,6 +48,9 @@ builder.Services.AddMemoryCache();
 builder.Services.AddSession();
 builder.Services.AddTransient<IOrder, OrderRepository>();
 builder.Services.AddTransient<PizzaKing.Services.IEmailSender, PizzaKing.Services.DevEmailSender>();
+builder.Services.AddScoped<IIngredient, IngredientRepository>();
+builder.Services.AddScoped<ICart, CartRepository>();
+builder.Services.AddScoped<IReview, ReviewRepository>();
 
 var app = builder.Build();
 

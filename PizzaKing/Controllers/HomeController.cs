@@ -11,16 +11,38 @@ namespace PizzaKing.Controllers
     {
         private readonly IProduct _products;
         private readonly ICategory _categories;
+        private readonly IReview _reviews;
 
-        public HomeController(IProduct products, ICategory categories)
+        public HomeController(IProduct products, ICategory categories, IReview reviews)
         {
             _products = products;
             _categories = categories;
+            _reviews = reviews;
         }
 
         [Route("/")]
         [HttpGet]
-        public async Task<IActionResult> Index(QueryOptions options, int categoryId)
+        public async Task<IActionResult> Index(QueryOptions options)
+        {
+            var latestReviews = await _reviews.GetReviewsAsync(4);
+            var reviewsVm = latestReviews
+                .Select(r => new ReviewViewModel
+                {
+                    Id = r.Id,
+                    Author = r.Author,
+                    Text = r.Text,
+                    Rating = r.Rating,
+                    CreatedAt = r.CreatedAt.ToLocalTime().ToString("dd MMM yyyy"),
+                })
+                .ToList();
+
+            ViewBag.Reviews = reviewsVm;
+            return View();
+        }
+
+        [Route("/menu")]
+        [HttpGet]
+        public async Task<IActionResult> Menu(QueryOptions options, int categoryId)
         {
             if (categoryId != 0)
             {
@@ -39,6 +61,7 @@ namespace PizzaKing.Controllers
                 return View(_products.GetAllProducts(options));
             }
         }
+
         [Route("/product")]
         [HttpGet]
         public async Task<IActionResult> GetProduct(int productId, string? returnUrl)

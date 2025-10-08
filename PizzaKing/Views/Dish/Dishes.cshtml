@@ -40,7 +40,6 @@
 					<td>@product.Description</td>
 					<td>@product.Price</td>
 					<td>@product.Category?.Name</td>
-					<td>@product.Brand</td>
 					<td>@product.Type.GetDescription()</td>
 					<td><a class="btn btn-sm btn-primary" asp-action="EditProduct" asp-controller="Dish" asp-route-productId="@product.Id">Изменить</a></td>
 					<td>

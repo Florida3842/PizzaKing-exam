@@ -16,7 +16,7 @@
 								<a asp-controller="Home" asp-action="Index">Главная</a>
 							</li>
 							<li>
-								<a asp-controller="Home" asp-action="Index"
+								<a asp-controller="Home" asp-action="Menu"
 								                     asp-route-categoryId="@Model.Product.CategoryId">
 									@Model.Product.Category.Name
 								</a>
@@ -62,7 +62,6 @@
 							</div>
 							<hr>
 							<ul class="list-unstyled manufacturer-listpro">
-								<li><span class="disc">Бренд:</span> @Model.Product.Brand </li>
 								<li>
 									<span class="disc">Вес:</span> <span class="disc1">
 										@Model.Product.Weight

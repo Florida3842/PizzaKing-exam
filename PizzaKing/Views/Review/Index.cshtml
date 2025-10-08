@@ -1,0 +1,19 @@
+﻿@model IEnumerable<PizzaKing.ViewModels.ReviewViewModel>
+
+@{
+    ViewData["Title"] = "Отзывы";
+}
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-8">
+            <h3>Отзывы посетителей</h3>
+            @await Html.PartialAsync("_ReviewsCarousel", Model)
+        </div>
+
+        <div class="col-md-4">
+            <h3>Оставить отзыв</h3>
+            @await Html.PartialAsync("_ReviewForm", new PizzaKing.ViewModels.ReviewCreateViewModel())
+        </div>
+    </div>
+</div>

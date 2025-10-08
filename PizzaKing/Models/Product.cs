@@ -20,7 +20,6 @@ namespace PizzaKing.Models
         public float Weight { get; set; }
         public float Calories { get; set; }
         public decimal Price { get; set; }
-        public string? Brand { get; set; }
         public string? Image { get; set; }
         public ProductType Type { get; set; }
         public DateTime DateOfPublication { get; set; }
